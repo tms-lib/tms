@@ -1,7 +1,24 @@
+# Минимальные технические требования
+
+* ОС Winodws (Не ниже 8), Linux, MacOS
+* Python >= 3.8
+
+# Рекомендованная версия Python
+
+Разработка библиотеки и тестирование проводилось на версии Python `3.12.2`. 
+
 # Установка
 
+Если используете Python 3.12.2:
+
 ```bash
-pip install .
+pip install requirements.txt
+```
+
+Если возникли ошибки при установке библиотеки или используете другую версию Python:
+
+```bash
+pip install requirements-noversion.txt
 ```
 
 # Тестирование
@@ -12,11 +29,7 @@ pytest
 
 # Документация
 
-Открыть через браузер: 
-
-```bash
-docs/_build/html/index.html
-```
+[Документация к бибилотеке](docs.md)
 
 # Добавление нового функционала
 
@@ -35,10 +48,67 @@ docs/_build/html/index.html
 
 Библиотека `tms` использует лицензию Apache 2.0.
 
-# Минимальные технические требования
+# Примеры использования
 
-* ОС Winodws (Не ниже 8), Linux, MacOS
-* Python >= 3.8
+Напишем код, который считывает данные по API, а затем проводит интерполяцию сплайнами по пропущенным данным.
+
+**Примечание:** Перед запуском необходимо установить `matplotlib`.
+
+```python
+import tms
+import matplotlib.pyplot as plt
+
+# считывание временного ряда по API
+ts = tms.TimeSeries("http://www.randomnumberapi.com/api/v1.0/random?min=100&max=1000&count=100")
+
+# выкалываем некоторые узлы для дальнейшей интерполяции
+missing = [[45, 52], [13, 20], [68, 75]]
+
+for arr in missing:
+    ts[arr[0]:arr[1]] = [None] * (arr[1] - arr[0])
+ 
+# строим график исходного временного ряда    
+plt.scatter(range(len(ts)), ts, label='Исходный', alpha=0.5, color='blue');
+
+# выполняем интерполяцию сплайнами
+interpolated = tms.interpolation.interpolate(ts, 'spline', 10, 10)
+plt.plot(interpolated, label='Интерполяция', color='red', alpha=0.5);
+
+# строим график интерполированных участков
+for arr in missing:
+    plt.scatter(range(arr[0], arr[1]), interpolated[arr[0]:arr[1]], color='red');
+   
+# выводим легенду графика    
+plt.legend();
+```
+
+Посмотрим на результат:
+
+![график](output.png)
+
+А теперь рассчитаем описательные статистики интерполированного ряда:
+
+```python
+print(f"\n Колмогоровское среднее 3 порядка: {tms.stats.kolmogorov_mean(interpolated, 3)}\n")
+print(f"\n Среднее значение: {tms.stats.mean(interpolated)}\n")
+print(f"\n Автокорреляция с лагом 2: {tms.stats.autocorrelation(interpolated, 2)}\n")
+print(f"\n 50% перцентиль: {tms.stats.percentile(interpolated, 50)}\n")
+print(f"\n Медиана: {tms.stats.median(interpolated)}\n")
+```
+
+Результат:
+
+```txt
+ Колмогоровское среднее 3 порядка: 569.9560442995079
+
+ Среднее значение: 588.5715385336848
+
+ Автокорреляция с лагом 2: 0.5874306887703938
+
+ Автокорреляция с лагом 2: 582.5
+
+ Автокорреляция с лагом 2: 582.5
+```
 
 # Перечень направлений прикладного использования разработанной библиотеки
 
