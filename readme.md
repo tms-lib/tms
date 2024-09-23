@@ -9,16 +9,28 @@
 
 # Установка
 
-Если используете Python 3.12.2:
+Чтобы использовать локально, предварительно необходимо склонировать к себе `master` ветку репозитория.
 
 ```bash
-pip install requirements.txt
+git clone -b master https://github.com/tms-lib/tms
+```
+
+После этого необходимо перейти в папку с библиотекой:
+
+```bash
+cd tms
+```
+
+А далее, если используете Python 3.12.2:
+
+```bash
+pip install -r requirements.txt
 ```
 
 Если возникли ошибки при установке библиотеки или используете другую версию Python:
 
 ```bash
-pip install requirements-noversion.txt
+pip install -r requirements-noversion.txt
 ```
 
 # Тестирование
